@@ -8,3 +8,11 @@ class ProjectSchemaAll(marshmallow.Schema):
     projects = conlist(str)
 
 schema_project_all = ProjectSchemaAll()
+
+class IOPortsSchema(marshmallow.Schema):
+    class Meta:
+        fields = ('in_ports', 'out_ports')
+    in_ports = conlist(str)
+    out_ports = conlist(str)
+
+schema_ioports = IOPortsSchema()
