@@ -10,6 +10,8 @@ class RestIoPorts(Resource):
                 'in_ports': ParseConfig('Ports', 'in_ports'),
                 'out_ports': ParseConfig('Ports', 'out_ports')
             }
+        
+        print(ret)
 
         return schema_ioports.dump(ret)
 

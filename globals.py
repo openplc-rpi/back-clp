@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restful import Api
 from configparser import ConfigParser
+import ast
 
 conffile = 'app.conf'
 
@@ -18,7 +19,7 @@ def ParseConfig(section, param, filename=conffile):
 		params = parser.items(section)
 		for p in params:
 			if p[0] == param:
-				return p[1]
+				return ast.literal_eval(p[1])
 	else:
 		raise Exception('Section {0} not found in the {1} file'.format(section, filename))
 
