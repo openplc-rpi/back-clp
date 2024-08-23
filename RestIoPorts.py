@@ -11,8 +11,6 @@ class RestIoPorts(Resource):
                 'out_ports': ParseConfig('Ports', 'out_ports')
             }
         
-        print(ret)
-
         return schema_ioports.dump(ret)
 
 

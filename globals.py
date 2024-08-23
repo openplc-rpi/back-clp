@@ -7,9 +7,10 @@ import ast
 
 conffile = 'app.conf'
 
-def ParseConfig(section, param, filename=conffile):
+def ParseConfig(section, param, array=False, filename=conffile):
 	# create a parser
 	parser = ConfigParser()
+	parser.optionxform=str
 	
 	# read config file
 	parser.read(filename)
@@ -19,7 +20,10 @@ def ParseConfig(section, param, filename=conffile):
 		params = parser.items(section)
 		for p in params:
 			if p[0] == param:
-				return ast.literal_eval(p[1])
+				if array:
+					return ast.literal_eval(p[1])
+				else:
+					return p[1]
 	else:
 		raise Exception('Section {0} not found in the {1} file'.format(section, filename))
 
