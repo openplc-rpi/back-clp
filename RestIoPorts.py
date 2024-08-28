@@ -7,8 +7,8 @@ class RestIoPorts(Resource):
 
     def get(self):
         ret = {
-                'in_ports': ParseConfig('Ports', 'in_ports'),
-                'out_ports': ParseConfig('Ports', 'out_ports')
+                'in_ports': ParseConfig('Ports', 'in_ports', True),
+                'out_ports': ParseConfig('Ports', 'out_ports', True)
             }
         
         return schema_ioports.dump(ret)
