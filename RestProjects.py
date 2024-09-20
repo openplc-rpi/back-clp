@@ -1,3 +1,5 @@
+import os
+
 from flask import request
 from flask_restful import Resource
 from globals import FlaskAPI, ParseConfig
@@ -32,7 +34,22 @@ class RestAppUser(Resource):
 
     def post(self):
         #implementar o salvamento do flowchart no diretório.
-        pass
+
+        base_dir = ParseConfig('all', 'base_dir')
+        file_name = 'flowchart'
+        try:
+            new_file_json = os.path.join(base_dir, '%s.json' % file_name)
+            file_json = open(new_file_json, 'w+')
+
+            try:
+                file_json.write('conteudo')
+            finally:
+                file_json.close()
+
+            return True
+        except:
+            return None
+
 
 
 FlaskAPI.add_resource(RestAppUser, '/app/v0.1/projects')
