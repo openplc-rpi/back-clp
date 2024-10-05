@@ -4,8 +4,8 @@
             "id": "dndnode_0",
             "type": "start",
             "position": {
-                "x": -30.5,
-                "y": 212.5
+                "x": -216.92593397154184,
+                "y": -83.73695746622448
             },
             "data": {
                 "label": "start"
@@ -21,8 +21,8 @@
             "id": "dndnode_1",
             "type": "inport",
             "position": {
-                "x": 92.5,
-                "y": 219
+                "x": -78.27561005636045,
+                "y": -78.03236882884352
             },
             "data": {
                 "label": "inport"
@@ -36,15 +36,15 @@
         },
         {
             "id": "dndnode_2",
-            "type": "operation",
+            "type": "decision",
             "position": {
-                "x": 269,
-                "y": 220.5
+                "x": 96.40079892637198,
+                "y": -77.15032391518139
             },
             "data": {
-                "label": "operation",
-                "signal": "*",
-                "text": "0.1"
+                "label": "decision",
+                "signal": ">",
+                "text": "1"
             },
             "measured": {
                 "width": 112,
@@ -55,10 +55,47 @@
         },
         {
             "id": "dndnode_3",
+            "type": "operation",
+            "position": {
+                "x": 282.7599006531293,
+                "y": -146.269326295068
+            },
+            "data": {
+                "label": "operation",
+                "signal": "*",
+                "text": "0.5"
+            },
+            "measured": {
+                "width": 112,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_4",
             "type": "outport",
             "position": {
-                "x": 448.53942250237196,
-                "y": 222.3947436663504
+                "x": 283.5281796546485,
+                "y": -1.6471820345351467
+            },
+            "data": {
+                "label": "outport",
+                "text": "RPI0"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_6",
+            "type": "outport",
+            "position": {
+                "x": 462.3399075767981,
+                "y": -145.851507791316
             },
             "data": {
                 "label": "outport"
@@ -67,15 +104,15 @@
                 "width": 102,
                 "height": 52
             },
-            "selected": true,
+            "selected": false,
             "dragging": false
         },
         {
-            "id": "dndnode_4",
+            "id": "dndnode_7",
             "type": "end",
             "position": {
-                "x": 613.3026281668248,
-                "y": 217.47371833175202
+                "x": 619.6054023180266,
+                "y": -71.97646610850914
             },
             "data": {
                 "label": "end"
@@ -84,52 +121,91 @@
                 "width": 62,
                 "height": 62
             },
-            "selected": false,
+            "selected": true,
             "dragging": false
         }
     ],
     "edges": [
         {
             "source": "dndnode_0",
+            "sourceHandle": "out",
             "target": "dndnode_1",
+            "targetHandle": "in",
             "animated": true,
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_0-dndnode_1"
+            "id": "xy-edge__dndnode_0out-dndnode_1in"
         },
         {
             "source": "dndnode_1",
+            "sourceHandle": "out",
             "target": "dndnode_2",
+            "targetHandle": "in",
             "animated": true,
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_1-dndnode_2"
+            "id": "xy-edge__dndnode_1out-dndnode_2in"
         },
         {
             "source": "dndnode_2",
-            "sourceHandle": "out",
+            "sourceHandle": "true",
             "target": "dndnode_3",
             "animated": true,
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_2out-dndnode_3"
+            "id": "xy-edge__dndnode_2true-dndnode_3"
         },
         {
-            "source": "dndnode_3",
+            "source": "dndnode_2",
+            "sourceHandle": "false",
             "target": "dndnode_4",
+            "targetHandle": "in",
             "animated": true,
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_3-dndnode_4"
+            "id": "xy-edge__dndnode_2false-dndnode_4in"
+        },
+        {
+            "source": "dndnode_3",
+            "sourceHandle": "out",
+            "target": "dndnode_6",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_3out-dndnode_6in"
+        },
+        {
+            "source": "dndnode_6",
+            "sourceHandle": "out",
+            "target": "dndnode_7",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_6out-dndnode_7in"
+        },
+        {
+            "source": "dndnode_4",
+            "sourceHandle": "out",
+            "target": "dndnode_7",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_4out-dndnode_7in"
         }
     ],
     "viewport": {
-        "x": 481.2300248958569,
-        "y": -44.65793749750395,
-        "zoom": 1.4339552480158273
+        "x": 262.9939676481027,
+        "y": 274.3423088217651,
+        "zoom": 1.0281138266560663
     }
 }
