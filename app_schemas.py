@@ -9,6 +9,14 @@ class ProjectSchemaAll(marshmallow.Schema):
 
 schema_project_all = ProjectSchemaAll()
 
+
+class ProjectSchema(marshmallow.Schema):
+    class Meta:
+        fields = ("status", "error_description", "name", "flowchart")
+
+schema_project = ProjectSchema()
+
+
 class IOPortsSchema(marshmallow.Schema):
     class Meta:
         fields = ('in_ports', 'out_ports')

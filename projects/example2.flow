@@ -1,0 +1,135 @@
+{
+    "nodes": [
+        {
+            "id": "dndnode_0",
+            "type": "start",
+            "position": {
+                "x": -30.5,
+                "y": 212.5
+            },
+            "data": {
+                "label": "start"
+            },
+            "measured": {
+                "width": 62,
+                "height": 62
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_1",
+            "type": "inport",
+            "position": {
+                "x": 92.5,
+                "y": 219
+            },
+            "data": {
+                "label": "inport"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_2",
+            "type": "operation",
+            "position": {
+                "x": 269,
+                "y": 220.5
+            },
+            "data": {
+                "label": "operation",
+                "signal": "*",
+                "text": "0.1"
+            },
+            "measured": {
+                "width": 112,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_3",
+            "type": "outport",
+            "position": {
+                "x": 448.53942250237196,
+                "y": 222.3947436663504
+            },
+            "data": {
+                "label": "outport"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": true,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_4",
+            "type": "end",
+            "position": {
+                "x": 613.3026281668248,
+                "y": 217.47371833175202
+            },
+            "data": {
+                "label": "end"
+            },
+            "measured": {
+                "width": 62,
+                "height": 62
+            },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "dndnode_0",
+            "target": "dndnode_1",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_0-dndnode_1"
+        },
+        {
+            "source": "dndnode_1",
+            "target": "dndnode_2",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_1-dndnode_2"
+        },
+        {
+            "source": "dndnode_2",
+            "sourceHandle": "out",
+            "target": "dndnode_3",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_2out-dndnode_3"
+        },
+        {
+            "source": "dndnode_3",
+            "target": "dndnode_4",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_3-dndnode_4"
+        }
+    ],
+    "viewport": {
+        "x": 481.2300248958569,
+        "y": -44.65793749750395,
+        "zoom": 1.4339552480158273
+    }
+}
