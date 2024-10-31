@@ -34,8 +34,9 @@ app = Flask(__name__)
 
 #allows cross-domain call
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
 marshmallow = Marshmallow(app)
 
 FlaskAPI = Api(app)
+socketio = SocketIO(app, asymc_mode='eventlet', logger=True, engineio_logger=True, cors_allowed_origins='*')
+
 

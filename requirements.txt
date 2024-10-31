@@ -5,3 +5,9 @@ flask_cors
 ConfigParser
 pydantic
 minimalmodbus
+flask_socketio
+eventlet
+
+# Need for websocket client tests
+requests
+websocket-client
