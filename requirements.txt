@@ -5,3 +5,5 @@ flask_cors
 ConfigParser
 pydantic
 minimalmodbus
+networkx
+matplotlib

@@ -1,5 +1,4 @@
 import json
-import numpy as np
 from random import random
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -12,10 +11,10 @@ def update_input_ports(G):
         node = G.nodes[node_id]
         
         if node.get("type") == "inport":
-            new_value = random.randint(1, 100)  # Gera novo valor aleatório
+            new_value = random.randint(1, 100) 
             
             # Atualiza todas as arestas saindo desse nó
-            for target_id in G.successors(node_id):  # Nó destino da aresta
+            for target_id in G.successors(node_id):  
                 edge_data = G.get_edge_data(node_id, target_id)
                 
                 if edge_data and edge_data.get("value") != new_value:
@@ -45,35 +44,32 @@ def plot_graph(G):
   utilizando o campo "value" presente na aresta diretamente conectada ao nó.
 """
 def recalc_values(G):
-    """
-    Recalcula os valores dos nós em ordem topológica, 
-    propagando o resultado das operações para as arestas de saída do nó.
-    """
     # Obtemos a ordem topológica (necessário que o grafo seja acíclico)
     topo_order = list(nx.topological_sort(G))
     
     for node_id in topo_order:
         node_data = G.nodes[node_id]
         node_type = node_data.get("type", "")
-        print(f'node_type: {node_type}')
         
-        # Se for um nó de entrada (inport), assumimos que o valor já foi atribuído via aresta
+        # Se for um nó de entrada (inport), assumimos que o valor já foi atribuído nas arestas sucessoras.
         if node_type == "inport":
             continue
         
         # Coleta os valores a partir das arestas de entrada conectadas ao nó
+        # Alguns nós podem ter mais de uma aresta de entrada, por exemplo o nó de logica.
         parent_values = []
         for parent_id in G.predecessors(node_id):
             edge_data = G.get_edge_data(parent_id, node_id)
             if edge_data is not None and "value" in edge_data:
                 parent_values.append(edge_data["value"])
         
-        print(f'parent_values: {parent_values}')
-        
-        # Se o nó é do tipo "operation", calculamos o resultado e propagamos para as arestas de saída
+        """
+            Trata nó de acordo com o seu tipo.
+        """
         if node_type == "operation":
             operation = node_data['data']['operation']
             value = float(node_data['data']['text'])
+            
             # Para operações, assumimos que há apenas um valor vindo da aresta de entrada
             parent_value = parent_values[0] if parent_values else 0
             
@@ -90,46 +86,39 @@ def recalc_values(G):
 
             # Propaga o resultado para cada aresta de saída do nó
             for target_id in G.successors(node_id):
-                # Atualiza o campo "value" da aresta que sai de node_id
-                G.edges[node_id, target_id]["value"] = result
+                            G.edges[node_id, target_id]["value"] = result
 
         elif node_type == "decision":
+            # Pega o operador e o valor de comparação.
+            operator = node_data['data'].get('signal')
+            compare_value = int(node_data['data'].get('text', 0))
+
             # Assume que há apenas uma entrada
             parent_value = parent_values[0] if parent_values else None
             
-            # Pega o operador e o valor de comparação da propriedade 'data'
-            operator = node_data['data'].get('signal')
-            try:
-                compare_value = int(node_data['data'].get('text', 0))
-            except (ValueError, TypeError):
-                compare_value = 0
-            
-            # Realiza a comparação; se parent_value for None, consideramos como False
-            if parent_value is None:
-                result_bool = False
+            if operator == "==":
+                result_bool = (parent_value == compare_value)
+            elif operator == ">":
+                result_bool = (parent_value > compare_value)
+            elif operator == "<":
+                result_bool = (parent_value < compare_value)
+            elif operator == ">=":
+                result_bool = (parent_value >= compare_value)
+            elif operator == "<=":
+                result_bool = (parent_value <= compare_value)
+            elif operator == "!=":
+                result_bool = (parent_value != compare_value)
             else:
-                if operator == "==":
-                    result_bool = (parent_value == compare_value)
-                elif operator == ">":
-                    result_bool = (parent_value > compare_value)
-                elif operator == "<":
-                    result_bool = (parent_value < compare_value)
-                elif operator == ">=":
-                    result_bool = (parent_value >= compare_value)
-                elif operator == "<=":
-                    result_bool = (parent_value <= compare_value)
-                elif operator == "!=":
-                    result_bool = (parent_value != compare_value)
-                else:
-                    result_bool = False
+                result_bool = False
 
             print(f'Decision node {node_id}: {parent_value} {operator} {compare_value} evaluates to {result_bool}')
 
+            # Propaga o resultado para cada aresta de saída do nó
             for target_id in G.successors(node_id):
                 G.edges[node_id, target_id]["value"] = 1 if result_bool else 0            
 
         elif node_type == "andor":
-            # Pega o operador e o valor de comparação da propriedade 'data'
+            # Pega o operador da propriedade signal.
             operator = node_data['data'].get('signal')
 
             result_bool = False            
@@ -138,27 +127,39 @@ def recalc_values(G):
             elif operator == "or":
                     result_bool = any(parent_values)
 
+            # Propaga o resultado para cada aresta de saída do nó
             for target_id in G.successors(node_id):
                 G.edges[node_id, target_id]["value"] = 1 if result_bool else 0
 
             print(f'Logic node {node_id}: {parent_values} {operator} evaluates to {result_bool}')
 
+        elif node_type == "equation":
+            # Pega a equação da propriedade text
+            equation = node_data['data'].get('text', 0)
+
+            # Assume que há apenas uma entrada
+            parent_value = parent_values[0] if parent_values else None
+            
+            ret = eval(equation.format(x=parent_value))
+            
+            print(f'Equation node {node_id}: {parent_value} {equation} evaluates to {ret}')
+
+            # Propaga o resultado para cada aresta de saída do nó
+            for target_id in G.successors(node_id):
+                G.edges[node_id, target_id]["value"] = ret
+
         elif node_type == "outport":
             # Para nós de saída, atualiza o campo "value" do nó a partir da aresta de entrada
             node_data["value"] = parent_values[0] if parent_values else None
-            # Propaga o resultado para cada aresta de saída do nó
+
+            # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
             for target_id in G.successors(node_id):
-                # Atualiza o campo "value" da aresta que sai de node_id
                 G.edges[node_id, target_id]["value"] = node_data["value"]
 
 
-        else:
-            # Para outros tipos, podemos definir outro comportamento ou simplesmente não fazer nada
-            pass
-
 
 data = None
-with open("projects/simple1.flow") as file:
+with open("projects/irrigacao.flow") as file:
     data = json.load(file)
 
 G = nx.DiGraph()
@@ -167,9 +168,9 @@ for node in data["nodes"]:
     G.add_node(node['id'], **node)
 
 for edge in data['edges']:
-    G.add_edge(edge['source'], edge['target'], value=0, sourceHandle= True if edge['sourceHandle'] == 'true' else False)
+    G.add_edge(edge['source'], edge['target'], value=0, sourceHandle=True if edge['sourceHandle'] == 'true' else False)
 
-print(update_input_ports(G))
+update_input_ports(G)
 
 recalc_values(G)
 
