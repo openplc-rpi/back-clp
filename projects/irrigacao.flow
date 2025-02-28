@@ -191,13 +191,13 @@
             },
             "data": {
                 "label": "andor",
-                "signal": "or"
+                "signal": "and"
             },
             "measured": {
                 "width": 112,
                 "height": 52
             },
-            "selected": false,
+            "selected": true,
             "dragging": false
         },
         {
