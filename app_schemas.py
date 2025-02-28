@@ -24,3 +24,10 @@ class IOPortsSchema(marshmallow.Schema):
     out_ports = conlist(str)
 
 schema_ioports = IOPortsSchema()
+
+
+class isRunningSchema(marshmallow.Schema):
+    class Meta:
+        fields = ('status', 'is_running',)
+
+schema_is_running = isRunningSchema()

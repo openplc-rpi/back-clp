@@ -33,8 +33,11 @@ class RestAppUser(Resource):
         else:
             path = os.path.join(base_dir, project_name)
 
-            with open(path, 'r') as f:
-                flow = json.load(f)
+            try:
+                with open(path, 'r') as f:
+                    flow = json.load(f)
+            except Exception as e:
+                return schema_project.dump({'status': 1, 'error_description': str(e)})
             
             project = { "status": 0,
                         "name": project_name,
