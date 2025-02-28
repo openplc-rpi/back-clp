@@ -5,28 +5,45 @@ import matplotlib.pyplot as plt
 import random
 import time
 
+from globals import socketio
 
 class Executor(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None, filename=None):
         threading.Thread.__init__(self, group=group, target=target, name=name)
         self.filename = filename
         self._stop_event = threading.Event()
+        self.initilized = False
 
     def update_input_ports(self, G):
         dirty = False
-        for node_id in G.nodes:
-            node = G.nodes[node_id]
 
-            if node.get("type") == "inport":
-                new_value = random.randint(1, 100) 
+        if not self.initilized or random.randint(1, 100) < 3:
+            self.initilized = True
+
+            for node_id in G.nodes:
+                node = G.nodes[node_id]
+                if node.get("type") == "inport":
+                    text = node.get("data", {}).get("text", "")
+                    if 'R' in text:
+                        new_value = random.randint(0, 1) 
+                    elif text == 'Vi1':
+                        new_value = random.uniform(0, 5)
+                    elif text == 'Vi2':
+                        new_value = random.uniform(0, 10)
+                    elif text == 'Li':
+                        new_value = random.uniform(0, 20)
+                    elif text == 'Di':
+                        new_value = random.randint(0, 1)
+                    else:
+                        new_value = 0
             
-                # Atualiza todas as arestas saindo desse nó
-                for target_id in G.successors(node_id):  
-                    edge_data = G.get_edge_data(node_id, target_id)
+                    # Atualiza todas as arestas saindo desse nó
+                    for target_id in G.successors(node_id):  
+                        edge_data = G.get_edge_data(node_id, target_id)
                 
-                    if edge_data and edge_data.get("value") != new_value:
-                        G.edges[node_id, target_id]["value"] = new_value
-                        dirty = True  # Indica que houve mudança
+                        if edge_data and edge_data.get("value") != new_value:
+                            G.edges[node_id, target_id]["value"] = new_value
+                            dirty = True  # Indica que houve mudança
         return dirty
 
 
@@ -186,6 +203,10 @@ class Executor(threading.Thread):
         for u, v, data in G.edges(data=True):
             edge_id = (u, v)
             value = data.get("value")
+
+            if isinstance(value, (float)):
+                value = f"{value:.2f}" 
+
             edges.append((edge_id, value))
         
         return edges
@@ -205,7 +226,7 @@ class Executor(threading.Thread):
                 if time.perf_counter() - start_time > 1:
                     start_time = start = time.perf_counter()
                     e = self.getEdgeValue(G)
-                    print(e)
+                    socketio.emit('update', e)
 
             time.sleep(0.05)
 

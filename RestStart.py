@@ -27,7 +27,7 @@ class RestStart(Resource):
         filename = request.json['filename']
 
         if state == 'start' and ExecutorInstance is None:
-            ExecutorInstance = Executor(filename=filename)
+            ExecutorInstance = Executor(filename='projects/'+filename)
             ExecutorInstance.start()
             print('Executor started')
 

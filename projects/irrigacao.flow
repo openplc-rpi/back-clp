@@ -57,8 +57,8 @@
             "id": "dndnode_3",
             "type": "inport",
             "position": {
-                "x": 686.3868598112756,
-                "y": 359.86052696030436
+                "x": 691.3097681812816,
+                "y": 362.81427198230796
             },
             "data": {
                 "label": "inport",
@@ -186,16 +186,16 @@
             "id": "dndnode_11",
             "type": "andor",
             "position": {
-                "x": 1162.567349367238,
-                "y": 350.8971482916301
+                "x": 1414.6202579115431,
+                "y": 357.7892200096385
             },
             "data": {
                 "label": "andor",
-                "signal": "and"
+                "signal": "or"
             },
             "measured": {
-                "width": 116,
-                "height": 56
+                "width": 112,
+                "height": 52
             },
             "selected": false,
             "dragging": false
@@ -204,12 +204,12 @@
             "id": "dndnode_13",
             "type": "andor",
             "position": {
-                "x": 1316.7675311313856,
-                "y": 196.14621945562752
+                "x": 1276.3996824973367,
+                "y": 314.29602033577044
             },
             "data": {
                 "label": "andor",
-                "signal": "and"
+                "signal": "or"
             },
             "measured": {
                 "width": 112,
@@ -222,12 +222,12 @@
             "id": "dndnode_14",
             "type": "outport",
             "position": {
-                "x": 1420.497782852798,
-                "y": 287.83861216635387
+                "x": 1510.0947151869063,
+                "y": 178.55004635222164
             },
             "data": {
                 "label": "outport",
-                "text": "RPI1"
+                "text": "Vo2"
             },
             "measured": {
                 "width": 102,
@@ -240,8 +240,8 @@
             "id": "dndnode_15",
             "type": "end",
             "position": {
-                "x": 1562.3488963099137,
-                "y": 282.0089036204844
+                "x": 1590.9017648559482,
+                "y": 320.4075889065308
             },
             "data": {
                 "label": "end"
@@ -264,7 +264,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_1out-dndnode_0in"
+            "id": "xy-edge__dndnode_1out-dndnode_0in",
+            "label": ""
         },
         {
             "source": "dndnode_1",
@@ -275,7 +276,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_1out-dndnode_2in"
+            "id": "xy-edge__dndnode_1out-dndnode_2in",
+            "label": ""
         },
         {
             "source": "dndnode_1",
@@ -286,7 +288,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_1out-dndnode_3in"
+            "id": "xy-edge__dndnode_1out-dndnode_3in",
+            "label": ""
         },
         {
             "source": "dndnode_0",
@@ -296,7 +299,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_0out-dndnode_4"
+            "id": "xy-edge__dndnode_0out-dndnode_4",
+            "label": ""
         },
         {
             "source": "dndnode_2",
@@ -306,7 +310,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_2out-dndnode_5"
+            "id": "xy-edge__dndnode_2out-dndnode_5",
+            "label": ""
         },
         {
             "source": "dndnode_4",
@@ -317,7 +322,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_4out-dndnode_6in"
+            "id": "xy-edge__dndnode_4out-dndnode_6in",
+            "label": ""
         },
         {
             "source": "dndnode_5",
@@ -328,7 +334,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_5out-dndnode_7in"
+            "id": "xy-edge__dndnode_5out-dndnode_7in",
+            "label": ""
         },
         {
             "source": "dndnode_6",
@@ -339,7 +346,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_6out-dndnode_8in1"
+            "id": "xy-edge__dndnode_6out-dndnode_8in1",
+            "label": ""
         },
         {
             "source": "dndnode_7",
@@ -350,7 +358,8 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_7out-dndnode_8in2"
+            "id": "xy-edge__dndnode_7out-dndnode_8in2",
+            "label": ""
         },
         {
             "source": "dndnode_4",
@@ -361,18 +370,54 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_4out-dndnode_10in"
+            "id": "xy-edge__dndnode_4out-dndnode_10in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_8",
+            "sourceHandle": "output",
+            "target": "dndnode_13",
+            "targetHandle": "in1",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_8output-dndnode_13in1",
+            "label": ""
+        },
+        {
+            "source": "dndnode_14",
+            "sourceHandle": "out",
+            "target": "dndnode_15",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_14out-dndnode_15in",
+            "label": ""
         },
         {
             "source": "dndnode_10",
             "sourceHandle": "out",
+            "target": "dndnode_13",
+            "targetHandle": "in2",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_10out-dndnode_13in2"
+        },
+        {
+            "source": "dndnode_13",
+            "sourceHandle": "output",
             "target": "dndnode_11",
             "targetHandle": "in1",
             "animated": true,
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_10out-dndnode_11in1"
+            "id": "xy-edge__dndnode_13output-dndnode_11in1"
         },
         {
             "source": "dndnode_3",
@@ -386,29 +431,7 @@
             "id": "xy-edge__dndnode_3out-dndnode_11in2"
         },
         {
-            "source": "dndnode_8",
-            "sourceHandle": "output",
-            "target": "dndnode_13",
-            "targetHandle": "in1",
-            "animated": true,
-            "markerEnd": {
-                "type": "arrowclosed"
-            },
-            "id": "xy-edge__dndnode_8output-dndnode_13in1"
-        },
-        {
             "source": "dndnode_11",
-            "sourceHandle": "output",
-            "target": "dndnode_13",
-            "targetHandle": "in2",
-            "animated": true,
-            "markerEnd": {
-                "type": "arrowclosed"
-            },
-            "id": "xy-edge__dndnode_11output-dndnode_13in2"
-        },
-        {
-            "source": "dndnode_13",
             "sourceHandle": "output",
             "target": "dndnode_14",
             "targetHandle": "in",
@@ -416,23 +439,12 @@
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_13output-dndnode_14in"
-        },
-        {
-            "source": "dndnode_14",
-            "sourceHandle": "out",
-            "target": "dndnode_15",
-            "targetHandle": "in",
-            "animated": true,
-            "markerEnd": {
-                "type": "arrowclosed"
-            },
-            "id": "xy-edge__dndnode_14out-dndnode_15in"
+            "id": "xy-edge__dndnode_11output-dndnode_14in"
         }
     ],
     "viewport": {
-        "x": -799.4516497608827,
-        "y": -10.949415356255145,
-        "zoom": 1.4339552480158264
+        "x": -525.3312866428626,
+        "y": 171.8923165965261,
+        "zoom": 1.0156597734915696
     }
 }
