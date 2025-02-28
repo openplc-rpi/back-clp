@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restful import Api
 from configparser import ConfigParser
+from flask_socketio import SocketIO
 import ast
 
 conffile = 'app.conf'
@@ -33,8 +34,9 @@ app = Flask(__name__)
 
 #allows cross-domain call
 CORS(app)
-
 marshmallow = Marshmallow(app)
 
 FlaskAPI = Api(app)
+socketio = SocketIO(app, asymc_mode='eventlet', logger=True, engineio_logger=True, cors_allowed_origins='*')
+
 

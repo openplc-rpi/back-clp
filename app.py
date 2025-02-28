@@ -1,11 +1,15 @@
-from globals import app
+import eventlet
+eventlet.monkey_patch()
 
-#App Rests
+from globals import app, socketio
+
+# App Rests
 import RestProjects
 import RestIoPorts
 import RestStart
 
+import socketio_manager
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
-
-
+    socketio.run(app, host='0.0.0.0', debug=True)
