@@ -194,10 +194,10 @@
                 "signal": "and"
             },
             "measured": {
-                "width": 112,
-                "height": 52
+                "width": 116,
+                "height": 56
             },
-            "selected": true,
+            "selected": false,
             "dragging": false
         },
         {
@@ -227,7 +227,7 @@
             },
             "data": {
                 "label": "outport",
-                "text": "Vo2"
+                "text": "RPI0"
             },
             "measured": {
                 "width": 102,

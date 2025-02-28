@@ -164,19 +164,23 @@ class Executor(threading.Thread):
             
                 result = eval(equation.format(x=parent_value))
 
-                # Propaga o resultado para cada aresta de saída do nó
-                #for target_id in G.successors(node_id):
-                #    G.edges[node_id, target_id]["value"] = ret
+            elif node_type == "switch":
+                #Posição 1 é signal, posição 2 é value
+                signal = parent_values[1] if parent_values else 0
+                parent_value = parent_values[0] if parent_values else None
+            
+                if signal == 1:
+                    result = parent_value
+                else:
+                    result = 0
 
             elif node_type == "outport":
                 # Para nós de saída, atualiza o campo "value" do nó a partir da aresta de entrada
                 node_data["value"] = parent_values[0] if parent_values else None
                 result = node_data["value"]
 
-                # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
-                #for target_id in G.successors(node_id):
-                #    G.edges[node_id, target_id]["value"] = node_data["value"]
-            
+
+            # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
             for target_id in G.successors(node_id):
                 G.edges[node_id, target_id]["value"] = result
 
