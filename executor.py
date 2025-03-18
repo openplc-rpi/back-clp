@@ -6,6 +6,16 @@ import random
 import time
 
 from globals import socketio
+from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor
+
+NODE_CLASSES = {
+    "operation": OperationNode,
+    "decision": DecisionNode,
+    "andor": AndOrNode,
+    "equation": EquationNode,
+    "switch": SwitchNode,
+    "outport": OutportNode,
+}
 
 class Executor(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None, filename=None):
@@ -72,113 +82,23 @@ class Executor(threading.Thread):
     
         for node_id in topo_order:
             node_data = G.nodes[node_id]
-            node_type = node_data.get("type", "")
-            result = None
-        
+            node_type = node_data.get("type", "")        
+            
             # Se for um nó de entrada (inport), assumimos que o valor já foi atribuído nas arestas sucessoras.
             if node_type == "inport":
                 continue
         
             # Coleta os valores a partir das arestas de entrada conectadas ao nó
             # Alguns nós podem ter mais de uma aresta de entrada, por exemplo o nó de logica.
-            parent_values = []
-            for parent_id in G.predecessors(node_id):
-                edge_data = G.get_edge_data(parent_id, node_id)
-                if edge_data is not None and "value" in edge_data:
-                    parent_values.append(edge_data["value"])
-
-            """
-                Trata nó de acordo com o seu tipo.
-            """
-            if node_type == "operation":
-                operation = node_data['data']['operation']
-                value = float(node_data['data']['text'])
+            parent_values = [
+                G.get_edge_data(parent_id, node_id).get("value", None)
+                for parent_id in G.predecessors(node_id)
+                if G.get_edge_data(parent_id, node_id) is not None
+            ]
             
-                # Para operações, assumimos que há apenas um valor vindo da aresta de entrada
-                parent_value = parent_values[0] if parent_values else 0
-            
-                if operation == "+":
-                    result = parent_value + value
-                elif operation == "*":
-                    result = parent_value * value
-                elif operation == "-":
-                    result = parent_value - value
-                elif operation == "/":
-                    result = parent_value / value if value != 0 else None
-                else:
-                    result = None
-
-                # Propaga o resultado para cada aresta de saída do nó
-                #for target_id in G.successors(node_id):
-                #    G.edges[node_id, target_id]["value"] = result
-
-            elif node_type == "decision":
-                # Pega o operador e o valor de comparação.
-                operator = node_data['data'].get('signal')
-                compare_value = int(node_data['data'].get('text', 0))
-
-                # Assume que há apenas uma entrada
-                parent_value = parent_values[0] if parent_values else None
-            
-                if operator == "==":
-                    result = (parent_value == compare_value)
-                elif operator == ">":
-                    result = (parent_value > compare_value)
-                elif operator == "<":
-                    result = (parent_value < compare_value)
-                elif operator == ">=":
-                    result = (parent_value >= compare_value)
-                elif operator == "<=":
-                    result = (parent_value <= compare_value)
-                elif operator == "!=":
-                    result = (parent_value != compare_value)
-                else:
-                    result = False
-
-                # Propaga o resultado para cada aresta de saída do nó
-                #for target_id in G.successors(node_id):
-                #    G.edges[node_id, target_id]["value"] = 1 if result_bool else 0            
-
-
-            elif node_type == "andor":
-                # Pega o operador da propriedade signal.
-                operator = node_data['data'].get('signal')
-
-                result = False            
-                if operator == "and":
-                        result = all(parent_values)
-                elif operator == "or":
-                    result = any(parent_values)
-
-                # Propaga o resultado para cada aresta de saída do nó
-                #for target_id in G.successors(node_id):
-                #    G.edges[node_id, target_id]["value"] = 1 if result_bool else 0
-
-
-            elif node_type == "equation":
-                # Pega a equação da propriedade text
-                equation = node_data['data'].get('text', 0)
-
-                # Assume que há apenas uma entrada
-                parent_value = parent_values[0] if parent_values else None
-            
-                result = eval(equation.format(x=parent_value))
-
-            elif node_type == "switch":
-                #Posição 1 é signal, posição 2 é value
-                signal = parent_values[1] if parent_values else 0
-                parent_value = parent_values[0] if parent_values else None
-            
-                if signal == 1:
-                    result = parent_value
-                else:
-                    result = 0
-
-            elif node_type == "outport":
-                # Para nós de saída, atualiza o campo "value" do nó a partir da aresta de entrada
-                node_data["value"] = parent_values[0] if parent_values else None
-                result = node_data["value"]
-
+            NodeClass = NODE_CLASSES.get(node_type, NodeProcessor)
+            processor = NodeClass(node_data, parent_values)
+            result = processor.process()            
 
             # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
             for target_id in G.successors(node_id):
