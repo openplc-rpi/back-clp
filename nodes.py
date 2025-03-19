@@ -46,6 +46,8 @@ class AndOrNode(NodeProcessor):
             return all(self.parent_values)
         elif operator == "or":
             return any(self.parent_values)
+        elif operator == "xor":
+            return sum(self.parent_values) % 2 == 1        
         return False
 
 class EquationNode(NodeProcessor):
