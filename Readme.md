@@ -1,10 +1,8 @@
-Simple example of integration between Flask and SQLAlchemy. Includes Basic Authentication.
-
 1. Enviroment Setup
 
-    $ git clone https://github.com/crmoratelli/flask-sqlalchemy.git
+    $ git clone https://github.com/openclp-rpi/back-clp.git
 
-    $ cd clp-backend
+    $ cd back-clp
 
     $ python -m venv env
 
