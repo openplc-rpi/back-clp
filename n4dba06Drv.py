@@ -47,8 +47,8 @@ class N4dba06Controller:
         self.instrument.write_register(self.port_mapping['out_ports'][port], value, functioncode=6)
 
 # Usage example:
-serial_port = ParseConfig('serial', 'port')
-controller = N4dba06Controller(serial_port)
-value = controller.read_port('Vi1')
-print(value)
-controller.write_port('Vo2', 100)
+#serial_port = ParseConfig('serial', 'port')
+#controller = N4dba06Controller(serial_port)
+#value = controller.read_port('Vi1')
+#print(value)
+#controller.write_port('Vo2', 100)

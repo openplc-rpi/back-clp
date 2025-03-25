@@ -1,12 +1,15 @@
 import threading
 import json
 import networkx as nx
-import matplotlib.pyplot as plt
 import random
 import time
 
-from globals import socketio
+from globals import socketio, ParseConfig
 from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor
+
+from n4dba06Drv import N4dba06Controller
+import RPi.GPIO as GPIO
+
 
 NODE_CLASSES = {
     "operation": OperationNode,
@@ -17,14 +20,25 @@ NODE_CLASSES = {
     "outport": OutportNode,
 }
 
+UPDATE_INTERVAL = 0.1
+
 class Executor(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None, filename=None):
         threading.Thread.__init__(self, group=group, target=target, name=name)
         self.filename = filename
         self._stop_event = threading.Event()
         self.initilized = False
+        
+        serial_port = ParseConfig('serial', 'port')
+        self.n4dba06 = N4dba06Controller(serial_port)
 
-    def update_input_ports(self, G):
+        self.last_update = 0
+
+        GPIO.setmode(GPIO.BCM)
+
+
+
+    def update_input_ports_random(self, G):
         dirty = False
 
         if not self.initilized or random.randint(1, 100) < 3:
@@ -56,20 +70,28 @@ class Executor(threading.Thread):
                             dirty = True  # Indica que houve mudança
         return dirty
 
+    def update_input_ports(self, G):
+        dirty = False
 
-    def plot_graph(self, G):
-        plt.figure(figsize=(12, 8))
-        pos = nx.spring_layout(G) 
-    
-        nx.draw(G, pos, with_labels=False, node_color="lightblue", edge_color="gray", node_size=1000, font_size=4)
-    
-        node_labels = {node: G.nodes[node].get("data", {}).get("label", node) for node in G.nodes}
-        nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=6, font_color="black")
-    
-        edge_labels = {(u, v): G.edges[u, v].get("value", "") for u, v in G.edges}
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=10, font_color="red")
-    
-        plt.savefig("grafo.png", dpi=300, bbox_inches="tight")
+        for node_id in G.nodes:
+            node = G.nodes[node_id]
+            if node.get("type") == "inport":
+                text = node.get("data", {}).get("text", "")
+                if 'GPIO' in text:
+                    gpio = int(text.removeprefix("GPIO"))
+                    new_value = GPIO.input(gpio)
+                else:
+                    new_value = self.n4dba06.read_port(text)
+            
+                # Atualiza todas as arestas saindo desse nó
+                for target_id in G.successors(node_id):  
+                    edge_data = G.get_edge_data(node_id, target_id)
+                
+                    if edge_data and edge_data.get("value") != new_value:
+                        G.edges[node_id, target_id]["value"] = new_value
+                        dirty = True  # Indica que houve mudança
+        
+        return dirty
     
 
     """
@@ -104,6 +126,15 @@ class Executor(threading.Thread):
             for target_id in G.successors(node_id):
                 G.edges[node_id, target_id]["value"] = result
 
+                #Se for outport, envia o valor para o dispositivo
+                if node_type == 'outport':
+                    text = node_data.get("data", {}).get("text", "")
+                    if 'GPIO' in text:
+                        gpio = int(text.removeprefix("GPIO"))
+                        GPIO.output(gpio, result)
+                    else:
+                        self.n4dba06.write_port(text, result)
+
 
 
     def load_graph(self):
@@ -135,9 +166,26 @@ class Executor(threading.Thread):
         
         return edges
 
+    def configure_rpi_gpio(self, G):
+        for node_id in G.nodes:
+            node = G.nodes[node_id]
+            if node.get("type") == "inport":
+                text = node.get("data", {}).get("text", "")
+                if 'GPIO' in text:
+                    gpio = int(text.removeprefix("GPIO"))
+                    GPIO.setup(gpio, GPIO.IN)
+            elif node.get("type") == "outport":
+                text = node.get("data", {}).get("text", "")
+                if 'GPIO' in text:
+                    gpio = int(text.removeprefix("GPIO"))
+                    GPIO.setup(gpio, GPIO.OUT)
+
+
          
     def run(self):
         G = self.load_graph()
+        
+        self.configure_rpi_gpio(G)
         
         start_time = start = time.perf_counter()
         
@@ -151,8 +199,10 @@ class Executor(threading.Thread):
                     start_time = start = time.perf_counter()
                     e = self.getEdgeValue(G)
                     socketio.emit('update', e)
+                    print(e)
+                    
 
-            time.sleep(0.05)
+            time.sleep(UPDATE_INTERVAL)
 
 
     def stop(self):
