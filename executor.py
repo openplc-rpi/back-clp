@@ -3,12 +3,18 @@ import json
 import networkx as nx
 import random
 import time
+import platform
 
 from globals import socketio, ParseConfig
 from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor
 
-from n4dba06Drv import N4dba06Controller
-import RPi.GPIO as GPIO
+def is_raspberry_pi():
+    return platform.machine().startswith('arm')
+
+if is_raspberry_pi():
+    import RPi.GPIO as GPIO
+    from n4dba06Drv import N4dba06Controller
+
 
 
 NODE_CLASSES = {
@@ -29,13 +35,16 @@ class Executor(threading.Thread):
         self._stop_event = threading.Event()
         self.initilized = False
         
-        serial_port = ParseConfig('serial', 'port')
-        self.n4dba06 = N4dba06Controller(serial_port)
-
         self.last_update = 0
+        self.n4dba06 = None
+        self.update = self.update_input_ports_random
 
-        GPIO.setmode(GPIO.BCM)
+        if is_raspberry_pi():
+            serial_port = ParseConfig('serial', 'port')
+            self.n4dba06 = N4dba06Controller(serial_port)
 
+            GPIO.setmode(GPIO.BCM)
+            self.update = self.update_input_ports
 
 
     def update_input_ports_random(self, G):
@@ -127,14 +136,13 @@ class Executor(threading.Thread):
                 G.edges[node_id, target_id]["value"] = result
 
                 #Se for outport, envia o valor para o dispositivo
-                if node_type == 'outport':
+                if node_type == 'outport' and is_raspberry_pi():
                     text = node_data.get("data", {}).get("text", "")
                     if 'GPIO' in text:
                         gpio = int(text.removeprefix("GPIO"))
                         GPIO.output(gpio, result)
                     else:
                         self.n4dba06.write_port(text, result)
-
 
 
     def load_graph(self):
@@ -185,13 +193,14 @@ class Executor(threading.Thread):
     def run(self):
         G = self.load_graph()
         
-        self.configure_rpi_gpio(G)
+        if is_raspberry_pi():
+            self.configure_rpi_gpio(G)
         
         start_time = start = time.perf_counter()
         
         while not self._stop_event.is_set():
             
-            if (self.update_input_ports(G)):
+            if (self.update(G)):
                 
                 self.recalc_values(G)
 
