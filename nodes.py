@@ -10,17 +10,18 @@ class NodeProcessor:
 class OperationNode(NodeProcessor):
     def process(self):
         operation = self.node_data['data']['operation']
-        value = float(self.node_data['data']['text'])
-        parent_value = self.parent_values[0] if self.parent_values else 0
+        op1 = self.parent_values[0] if self.parent_values else 0
+        op2 = self.parent_values[1] if self.parent_values else 0
 
         if operation == "+":
-            return parent_value + value
+            return op1 + op2
         elif operation == "*":
-            return parent_value * value
+            return op1 * op2
         elif operation == "-":
-            return parent_value - value
+            return op1 - op2
         elif operation == "/":
-            return parent_value / value if value != 0 else None
+            return op1 / op2 if op2 != 0 else None
+        
         return None
 
 class DecisionNode(NodeProcessor):
