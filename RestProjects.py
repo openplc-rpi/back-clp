@@ -55,6 +55,9 @@ class RestAppUser(Resource):
         if 'flowchart' not in request.json:
             return schema_project({'status': 1, 'error_description': 'flowchart is required'})
         
+        for e in request.json['flowchart']['edges']:
+            e['label'] = ''
+        
         try:
             new_file = os.path.join(base_dir, request.json['project_name'])
 
