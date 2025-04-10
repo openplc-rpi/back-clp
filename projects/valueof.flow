@@ -1,0 +1,218 @@
+{
+    "nodes": [
+        {
+            "id": "dndnode_0",
+            "type": "valueof",
+            "position": {
+                "x": 626,
+                "y": 410
+            },
+            "data": {
+                "label": "valueof",
+                "text": "Vo2"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_1",
+            "type": "outport",
+            "position": {
+                "x": 912.5,
+                "y": 263
+            },
+            "data": {
+                "label": "outport",
+                "text": "Vo2"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_2",
+            "type": "start",
+            "position": {
+                "x": 495,
+                "y": 270
+            },
+            "data": {
+                "label": "start"
+            },
+            "measured": {
+                "width": 62,
+                "height": 62
+            }
+        },
+        {
+            "id": "dndnode_3",
+            "type": "inport",
+            "position": {
+                "x": 632.5,
+                "y": 264
+            },
+            "data": {
+                "label": "inport",
+                "text": "Vi1"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_5",
+            "type": "decision",
+            "position": {
+                "x": 803.5,
+                "y": 410
+            },
+            "data": {
+                "label": "decision",
+                "signal": ">=",
+                "text": "2.5"
+            },
+            "measured": {
+                "width": 112,
+                "height": 52
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_6",
+            "type": "outport",
+            "position": {
+                "x": 1024.0523040151807,
+                "y": 408.6315380018976
+            },
+            "data": {
+                "label": "outport",
+                "text": "GPIO4"
+            },
+            "measured": {
+                "width": 102,
+                "height": 52
+            },
+            "selected": true,
+            "dragging": false
+        },
+        {
+            "id": "dndnode_9",
+            "type": "end",
+            "position": {
+                "x": 1302.8688509800756,
+                "y": 356.144938157337
+            },
+            "data": {
+                "label": "end"
+            },
+            "measured": {
+                "width": 62,
+                "height": 62
+            },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "dndnode_2",
+            "sourceHandle": "out",
+            "target": "dndnode_0",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_2out-dndnode_0in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_2",
+            "sourceHandle": "out",
+            "target": "dndnode_3",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_2out-dndnode_3in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_3",
+            "sourceHandle": "out",
+            "target": "dndnode_1",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_3out-dndnode_1in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_0",
+            "sourceHandle": "out",
+            "target": "dndnode_5",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_0out-dndnode_5in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_1",
+            "sourceHandle": "out",
+            "target": "dndnode_9",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_1out-dndnode_9in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_6",
+            "sourceHandle": "out",
+            "target": "dndnode_9",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_6out-dndnode_9in",
+            "label": ""
+        },
+        {
+            "source": "dndnode_5",
+            "sourceHandle": "out",
+            "target": "dndnode_6",
+            "targetHandle": "in",
+            "animated": true,
+            "markerEnd": {
+                "type": "arrowclosed"
+            },
+            "id": "xy-edge__dndnode_5out-dndnode_6in",
+            "label": ""
+        }
+    ],
+    "viewport": {
+        "x": -445.82334443943955,
+        "y": -117.71428167408953,
+        "zoom": 1.4339552480158273
+    }
+}

@@ -108,6 +108,8 @@ class Executor(threading.Thread):
     utilizando o campo "value" presente na aresta diretamente conectada ao nó.
     """
     def recalc_values(self, G):
+        dirty = False
+
         # Obtemos a ordem topológica (necessário que o grafo seja acíclico)
         topo_order = list(nx.topological_sort(G))
     
@@ -116,7 +118,8 @@ class Executor(threading.Thread):
             node_type = node_data.get("type", "")        
             
             # Se for um nó de entrada (inport), assumimos que o valor já foi atribuído nas arestas sucessoras.
-            if node_type == "inport":
+            # Se for um no valueof, deverá ser processado o final. 
+            if node_type == "inport" or node_type == "valueof":
                 continue
         
             # Coleta os valores a partir das arestas de entrada conectadas ao nó
@@ -136,14 +139,30 @@ class Executor(threading.Thread):
                 G.edges[node_id, target_id]["value"] = result
 
                 #Se for outport, envia o valor para o dispositivo
-                if node_type == 'outport' and is_raspberry_pi():
+                if node_type == 'outport':
                     text = node_data.get("data", {}).get("text", "")
-                    if 'GPIO' in text:
-                        gpio = int(text.removeprefix("GPIO"))
-                        GPIO.output(gpio, result)
-                    else:
-                        self.n4dba06.write_port(text, result)
+                    if is_raspberry_pi():
+                        if 'GPIO' in text:
+                            gpio = int(text.removeprefix("GPIO"))
+                            GPIO.output(gpio, result)
+                        else:
+                            self.n4dba06.write_port(text, result)
+                    
+                    # Atualiza nodo valueof se existir.
+                    for n in topo_order:
+                        node_data = G.nodes[n]
+                        node_type = node_data.get("type", "")
+                        if node_type == "valueof":
+                            valueof_text = node_data.get("data", {}).get("text", "")
+                            if text == valueof_text:
+                                for t in G.successors(n):
+                                    if float(G.edges[n, t]["value"]) != result:
+                                        G.edges[n, t]["value"] = result
+                                        dirty = True
 
+
+        return dirty
+                                
 
     def load_graph(self):
         data = None
@@ -202,7 +221,8 @@ class Executor(threading.Thread):
             
             if (self.update(G)):
                 
-                self.recalc_values(G)
+                while (self.recalc_values(G)):
+                    pass
 
                 if time.perf_counter() - start_time > 1:
                     start_time = start = time.perf_counter()

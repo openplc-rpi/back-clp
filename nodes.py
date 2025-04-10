@@ -27,7 +27,7 @@ class OperationNode(NodeProcessor):
 class DecisionNode(NodeProcessor):
     def process(self):
         operator = self.node_data['data'].get('signal')
-        compare_value = int(self.node_data['data'].get('text', 0))
+        compare_value = float(self.node_data['data'].get('text', 0))
         parent_value = self.parent_values[0] if self.parent_values else None
 
         operators = {
@@ -66,3 +66,4 @@ class SwitchNode(NodeProcessor):
 class OutportNode(NodeProcessor):
     def process(self):
         return self.parent_values[0] if self.parent_values else None
+    
