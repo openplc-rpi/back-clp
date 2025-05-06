@@ -6,7 +6,7 @@ import time
 import platform
 
 from globals import socketio, ParseConfig
-from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor
+from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor, ProporcionalNode, DerivativeNode
 
 def is_raspberry_pi():
     return platform.machine().startswith('arm')
@@ -24,6 +24,8 @@ NODE_CLASSES = {
     "equation": EquationNode,
     "switch": SwitchNode,
     "outport": OutportNode,
+    "Proporcional":ProporcionalNode,
+    "Derivative": DerivativeNode
 }
 
 UPDATE_INTERVAL = 0.1
