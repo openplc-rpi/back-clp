@@ -1,4 +1,5 @@
 Flask
+marshmallow==3.20.1
 flask-marshmallow
 Flask-RESTful
 flask_cors

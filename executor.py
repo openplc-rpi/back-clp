@@ -4,6 +4,7 @@ import networkx as nx
 import random
 import time
 import platform
+import math
 
 from globals import socketio, ParseConfig
 from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor, ProporcionalNode, DerivativeNode
@@ -47,6 +48,8 @@ class Executor(threading.Thread):
 
             GPIO.setmode(GPIO.BCM)
             self.update = self.update_input_ports
+
+        self.prev_derivative_err=0
 
 
     def update_input_ports_random(self, G):
@@ -133,8 +136,14 @@ class Executor(threading.Thread):
             ]
             
             NodeClass = NODE_CLASSES.get(node_type, NodeProcessor)
-            processor = NodeClass(node_data, parent_values)
-            result = processor.process()            
+            if node_type == "Derivative":
+                processor = NodeClass(node_data, parent_values, self.prev_derivative_err)
+                result, self.prev_derivative_err = processor.process() 
+            else:
+                processor = NodeClass(node_data, parent_values)
+                result = processor.process() 
+
+
 
             # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
             for target_id in G.successors(node_id):
@@ -159,8 +168,11 @@ class Executor(threading.Thread):
                             if text == valueof_text:
                                 for t in G.successors(n):
                                     if float(G.edges[n, t]["value"]) != result:
-                                        G.edges[n, t]["value"] = result
-                                        dirty = True
+                                        if math.isinf(result):
+                                           G.edges[n, t]["value"] = 0
+                                        else: 
+                                            G.edges[n, t]["value"] = result
+                                        #dirty = True
 
 
         return dirty
