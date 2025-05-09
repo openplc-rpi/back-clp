@@ -7,7 +7,7 @@ import platform
 import math
 
 from globals import socketio, ParseConfig
-from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor, ProporcionalNode, DerivativeNode
+from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor, ProporcionalNode, DerivativeNode, ValueOf
 
 def is_raspberry_pi():
     return platform.machine().startswith('arm')
@@ -26,7 +26,8 @@ NODE_CLASSES = {
     "switch": SwitchNode,
     "outport": OutportNode,
     "Proporcional":ProporcionalNode,
-    "Derivative": DerivativeNode
+    "Derivative": DerivativeNode,
+    "valueof": ValueOf
 }
 
 UPDATE_INTERVAL = 0.1
@@ -48,8 +49,6 @@ class Executor(threading.Thread):
 
             GPIO.setmode(GPIO.BCM)
             self.update = self.update_input_ports
-
-        self.prev_derivative_err=0
 
 
     def update_input_ports_random(self, G):
@@ -113,8 +112,6 @@ class Executor(threading.Thread):
     utilizando o campo "value" presente na aresta diretamente conectada ao nó.
     """
     def recalc_values(self, G):
-        dirty = False
-
         # Obtemos a ordem topológica (necessário que o grafo seja acíclico)
         topo_order = list(nx.topological_sort(G))
     
@@ -124,7 +121,7 @@ class Executor(threading.Thread):
             
             # Se for um nó de entrada (inport), assumimos que o valor já foi atribuído nas arestas sucessoras.
             # Se for um no valueof, deverá ser processado o final. 
-            if node_type == "inport" or node_type == "valueof":
+            if node_type == "inport":
                 continue
         
             # Coleta os valores a partir das arestas de entrada conectadas ao nó
@@ -135,47 +132,25 @@ class Executor(threading.Thread):
                 if G.get_edge_data(parent_id, node_id) is not None
             ]
             
-            NodeClass = NODE_CLASSES.get(node_type, NodeProcessor)
-            if node_type == "Derivative":
-                processor = NodeClass(node_data, parent_values, self.prev_derivative_err)
-                result, self.prev_derivative_err = processor.process() 
-            else:
-                processor = NodeClass(node_data, parent_values)
-                result = processor.process() 
-
-
+            #Calcula o resultado do nó
+            result = node_data["logic"].process(parent_values)
 
             # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
             for target_id in G.successors(node_id):
                 G.edges[node_id, target_id]["value"] = result
 
-                #Se for outport, envia o valor para o dispositivo
-                if node_type == 'outport':
-                    text = node_data.get("data", {}).get("text", "")
-                    if is_raspberry_pi():
-                        if 'GPIO' in text:
-                            gpio = int(text.removeprefix("GPIO"))
-                            GPIO.output(gpio, result)
-                        else:
-                            self.n4dba06.write_port(text, result)
+            #Se for outport, envia o valor para o dispositivo
+            if node_type == 'outport':
+                text = node_data.get("data", {}).get("text", "")
+                G.nodes[node_id]["data"]["value"] = result
+                if is_raspberry_pi():
+                    if 'GPIO' in text:
+                        gpio = int(text.removeprefix("GPIO"))
+                        GPIO.output(gpio, result)
+                    else:
+                        self.n4dba06.write_port(text, result)
                     
-                    # Atualiza nodo valueof se existir.
-                    for n in topo_order:
-                        node_data = G.nodes[n]
-                        node_type = node_data.get("type", "")
-                        if node_type == "valueof":
-                            valueof_text = node_data.get("data", {}).get("text", "")
-                            if text == valueof_text:
-                                for t in G.successors(n):
-                                    if float(G.edges[n, t]["value"]) != result:
-                                        if math.isinf(result):
-                                           G.edges[n, t]["value"] = 0
-                                        else: 
-                                            G.edges[n, t]["value"] = result
-                                        #dirty = True
-
-
-        return dirty
+            
                                 
 
     def load_graph(self):
@@ -186,6 +161,8 @@ class Executor(threading.Thread):
         G = nx.DiGraph()
 
         for node in data["nodes"]:
+            NodeClass = NODE_CLASSES.get(node['type'], NodeProcessor)
+            node['logic'] = NodeClass(node, G)
             G.add_node(node['id'], **node)
 
         for edge in data['edges']:
@@ -233,18 +210,15 @@ class Executor(threading.Thread):
         
         while not self._stop_event.is_set():
             
-            if (self.update(G)):
+            if self.update(G):
                 
-                while (self.recalc_values(G)):
-                    pass
+                self.recalc_values(G)
 
                 if time.perf_counter() - start_time > 1:
                     start_time = start = time.perf_counter()
                     e = self.getEdgeValue(G)
                     socketio.emit('update', e)
-                    print(e)
-                    
-
+                   
             time.sleep(UPDATE_INTERVAL)
 
 

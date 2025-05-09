@@ -8,6 +8,7 @@ import ast
 
 conffile = 'app.conf'
 
+
 def ParseConfig(section, param, array=False, filename=conffile):
 	# create a parser
 	parser = ConfigParser()

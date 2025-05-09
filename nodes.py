@@ -1,64 +1,52 @@
 import time
 
 class NodeProcessor:
-    def __init__(self, node_data, parent_values):
+    def __init__(self, node_data, G):
         self.node_data = node_data
-        self.parent_values = parent_values
+        self.G = G
 
-    def process(self):
+    def process(self, parent_values):
         return None
     
 class ProporcionalNode(NodeProcessor):
-    def process(self):
-        print("Dados do nó:", self.node_data)  # Verifique os dados recebidos pelo nó
+    def process(self, parent_values):
         kp = float(self.node_data['data'].get('text', 1))
-        parent_value = self.parent_values[0] if self.parent_values else 0
-
+        parent_value = parent_values[0] if parent_values else 0
         result = kp * parent_value
-        print(f"kp: {kp}, parent_value: {parent_value}, result: {result}")
+
         return result
     
 
 class DerivativeNode(NodeProcessor):
-    def __init__(self, node_data, parent_values, prev_err):
-        super().__init__(node_data, parent_values)
-        # Se a variável 'prev_value' ainda não existe, inicialize ela
-        if not hasattr(self, 'prev_value'):
-            self.prev_value = 0
-            self.ts = 0.1  # Definindo um intervalo de amostragem de 10ms (100 Hz)
-            self.flag = False
-            self.prev_err = prev_err
-            #self.prev_time = time.perf_counter()
-            #self.kd = float(node_data.get('data', {}).get('kd', 1))  # KD vindo dos dados do nó (padrão 1)
+    def __init__(self, node_data, G):
+        super().__init__(node_data, G)
 
-    def process(self):
-        #current_time = time.perf_counter()
+        self.ts = 0.1 
+        self.flag = False
+        self.prev_err = 0
+
+    def process(self, parent_values):
         kd = float(self.node_data.get('data', {}).get('kd', 1))
-        print('kd', kd)
-        current_value = self.parent_values[0] if self.parent_values else 0
+        current_value = parent_values[0] if parent_values else 0
 
-        # Calcula a derivada (valor atual - valor anterior) / (tempo atual - tempo anterior)
         delta_value = current_value - self.prev_err
-        print (delta_value, '=', current_value, '-', self.prev_err)
-        #delta_time = current_time - self.prev_time
     
         # Calcula o termo derivativo (KD * derivada)
         derivative = (delta_value / self.ts) if self.ts > 0 else 0
         result = kd * derivative
-        
-        #self.prev_time = current_time
 
-        # Retorna o valor calculado com KD
-        return result, current_value
+        self.prev_err = current_value
+        
+        return result
 
 
 
 
 class OperationNode(NodeProcessor):
-    def process(self):
+    def process(self, parent_values):
         operation = self.node_data['data']['operation']
-        op1 = self.parent_values[0] if self.parent_values else 0
-        op2 = self.parent_values[1] if self.parent_values else 0
+        op1 = parent_values[0] if parent_values else 0
+        op2 = parent_values[1] if parent_values else 0
 
         if operation == "+":
             return op1 + op2
@@ -72,10 +60,10 @@ class OperationNode(NodeProcessor):
         return None
 
 class DecisionNode(NodeProcessor):
-    def process(self):
+    def process(self, parent_values):
         operator = self.node_data['data'].get('signal')
         compare_value = float(self.node_data['data'].get('text', 0))
-        parent_value = self.parent_values[0] if self.parent_values else None
+        parent_value = parent_values[0] if parent_values else None
 
         operators = {
             "==": parent_value == compare_value,
@@ -88,29 +76,45 @@ class DecisionNode(NodeProcessor):
         return operators.get(operator, False)
 
 class AndOrNode(NodeProcessor):
-    def process(self):
+    def process(self, parent_values):
         operator = self.node_data['data'].get('signal')
         if operator == "and":
-            return all(self.parent_values)
+            return all(parent_values)
         elif operator == "or":
-            return any(self.parent_values)
+            return any(parent_values)
         elif operator == "xor":
-            return sum(self.parent_values) % 2 == 1        
+            return sum(parent_values) % 2 == 1        
         return False
 
 class EquationNode(NodeProcessor):
-    def process(self):
+    def process(self, parent_values):
         equation = self.node_data['data'].get('text', "0")
-        parent_value = self.parent_values[0] if self.parent_values else None
+        parent_value = parent_values[0] if parent_values else None
         return eval(equation.format(x=parent_value))
 
 class SwitchNode(NodeProcessor):
-    def process(self):
-        signal = self.parent_values[1] if len(self.parent_values) > 1 else 0
-        parent_value = self.parent_values[0] if self.parent_values else None
+    def process(self, parent_values):
+        signal = parent_values[1] if len(parent_values) > 1 else 0
+        parent_value = parent_values[0] if parent_values else None
         return parent_value if signal == 1 else 0
 
 class OutportNode(NodeProcessor):
-    def process(self):
-        return self.parent_values[0] if self.parent_values else None
+    def process(self, parent_values):
+        return parent_values[0] if parent_values else 0
+
     
+class ValueOf(NodeProcessor):
+    def __init__(self, node_data, G):
+        self.node_data = node_data
+        self.G = G
+
+    def process(self, parent_values):
+        ret = 0
+        text = self.node_data.get("data", {}).get("text", "")
+        for node_id in self.G.nodes:
+            node = self.G.nodes[node_id]
+            if node.get("data", {}).get("text", "") == text and node.get("type") == "outport":
+                ret = node.get("data", {}).get("value", 0)
+                break
+
+        return ret
