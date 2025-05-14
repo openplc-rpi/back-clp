@@ -7,7 +7,36 @@ class NodeProcessor:
 
     def process(self, parent_values):
         return None
+
+class PID(NodeProcessor):
+    def __init__(self, node_data, G):
+        super().__init__(node_data, G)
+
+        self.erro = 0.0
+        self.erro_d = 0.0
+        self.erro_int = 0.0
+        self.erro_ant = 0.0
+        self.erro_int_ant = 0.0
+        self.ts = 0.05
     
+    def process(self, parent_values):
+        Kp = float(self.node_data['data'].get('P', 0))
+        Ki = float(self.node_data['data'].get('I', 0))
+        Kd = float(self.node_data['data'].get('D', 0))
+
+        self.erro = parent_values[0] if parent_values else 0
+
+        self.erro_int = self.erro_int_ant + ((self.erro + self.erro_ant) * self.ts / 2)  # integração trapezoidal
+        self.erro_int_ant = self.erro_int
+
+        self.erro_d = (self.erro - self.erro_ant) / self.ts  # derivada
+        self.erro_ant = self.erro
+
+        result = self.erro * Kp + self.erro_int * Ki + self.erro_d * Kd  # saída PID
+
+        return result
+
+
 class ProporcionalNode(NodeProcessor):
     def process(self, parent_values):
         kp = float(self.node_data['data'].get('text', 1))
@@ -140,5 +169,7 @@ class ValueOf(NodeProcessor):
             if node.get("data", {}).get("text", "") == text and node.get("type") == "outport":
                 ret = node.get("data", {}).get("value", 0)
                 break
+
+        ret = 0.0 if ret is None else ret
 
         return ret

@@ -7,7 +7,10 @@ import platform
 import math
 
 from globals import socketio, ParseConfig
-from nodes import OperationNode, DecisionNode, AndOrNode, EquationNode, SwitchNode, OutportNode, NodeProcessor, ProporcionalNode, DerivativeNode, IntegralNode, ValueOf
+from nodes import   (OperationNode, DecisionNode, AndOrNode, 
+                    EquationNode, SwitchNode, OutportNode, 
+                    NodeProcessor, ProporcionalNode, DerivativeNode, 
+                    IntegralNode, ValueOf, PID)
 
 def is_raspberry_pi():
     return platform.machine().startswith('arm')
@@ -16,7 +19,16 @@ if is_raspberry_pi():
     import RPi.GPIO as GPIO
     from n4dba06Drv import N4dba06Controller
 
-
+OutPutPort_Proprierties = {
+    "Vo1": {
+        "min": 0.05,
+        "max": 5,
+    },
+    "Vo2": {
+        "min": 0.1,
+        "max": 10,
+    },
+}
 
 NODE_CLASSES = {
     "operation": OperationNode,
@@ -28,10 +40,11 @@ NODE_CLASSES = {
     "Proporcional":ProporcionalNode,
     "Derivative": DerivativeNode,
     "valueof": ValueOf,
-    "Integral" : IntegralNode
+    "Integral" : IntegralNode,
+    "pid": PID
 }
 
-UPDATE_INTERVAL = 0.1
+UPDATE_INTERVAL = 0.01
 
 class Executor(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None, filename=None):
@@ -52,28 +65,37 @@ class Executor(threading.Thread):
             self.update = self.update_input_ports
 
 
+    def get_bounded_random(self, current_value, delta=0.5, min_value=0.0, max_value=5.0):
+        lower_bound = max(current_value - delta, min_value)
+        upper_bound = min(current_value + delta, max_value)
+        return random.uniform(lower_bound, upper_bound)
+
+
     def update_input_ports_random(self, G):
         dirty = False
 
-        if not self.initilized or random.randint(1, 100) < 3:
+        if not self.initilized or random.randint(1, 100) < 2:
             self.initilized = True
 
             for node_id in G.nodes:
                 node = G.nodes[node_id]
                 if node.get("type") == "inport":
                     text = node.get("data", {}).get("text", "")
+                    value = float(node.get("data", {}).get("value", 0))
                     if 'R' in text:
                         new_value = random.randint(0, 1) 
                     elif text == 'Vi1':
-                        new_value = random.uniform(0, 5)
+                        new_value = self.get_bounded_random(value, 0.5, 0.05, 5)
                     elif text == 'Vi2':
-                        new_value = random.uniform(0, 10)
+                        new_value = self.get_bounded_random(value, 0.5, 0.1, 10)
                     elif text == 'Li':
                         new_value = random.uniform(0, 20)
                     elif text == 'Di':
                         new_value = random.randint(0, 1)
                     else:
                         new_value = 0
+
+                    node['data']["value"] = new_value
             
                     # Atualiza todas as arestas saindo desse nó
                     for target_id in G.successors(node_id):  
@@ -132,13 +154,9 @@ class Executor(threading.Thread):
                 for parent_id in G.predecessors(node_id)
                 if G.get_edge_data(parent_id, node_id) is not None
             ]
-            
+         
             #Calcula o resultado do nó
             result = node_data["logic"].process(parent_values)
-
-            # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
-            for target_id in G.successors(node_id):
-                G.edges[node_id, target_id]["value"] = result
 
             #Se for outport, envia o valor para o dispositivo
             if node_type == 'outport':
@@ -150,8 +168,11 @@ class Executor(threading.Thread):
                         GPIO.output(gpio, result)
                     else:
                         self.n4dba06.write_port(text, result)
-                    
-            
+
+
+            # Propaga o resultado para cada aresta de saída do nó, assim é possível dar continuidade ao fluxo.
+            for target_id in G.successors(node_id):
+                G.edges[node_id, target_id]["value"] = result
                                 
 
     def load_graph(self):
@@ -165,6 +186,7 @@ class Executor(threading.Thread):
             NodeClass = NODE_CLASSES.get(node['type'], NodeProcessor)
             node['logic'] = NodeClass(node, G)
             G.add_node(node['id'], **node)
+
 
         for edge in data['edges']:
             G.add_edge(edge['source'], edge['target'], value=0, sourceHandle=True if edge['sourceHandle'] == 'true' else False)
@@ -211,14 +233,14 @@ class Executor(threading.Thread):
         
         while not self._stop_event.is_set():
             
-            if self.update(G):
+            self.update(G)
                 
-                self.recalc_values(G)
+            self.recalc_values(G)
 
-                if time.perf_counter() - start_time > 1:
-                    start_time = start = time.perf_counter()
-                    e = self.getEdgeValue(G)
-                    socketio.emit('update', e)
+            if time.perf_counter() - start_time > 0.1:
+                start_time = start = time.perf_counter()
+                e = self.getEdgeValue(G)
+                socketio.emit('update', e)
                    
             time.sleep(UPDATE_INTERVAL)
 
