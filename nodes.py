@@ -39,7 +39,31 @@ class DerivativeNode(NodeProcessor):
         
         return result
 
+class IntegralNode(NodeProcessor):
+    def __init__(self, node_data, G):
+        super().__init__(node_data, G)
 
+        self.ts = 0.1
+        self.prev_err_int = 0
+        self.prev_err = 0
+
+
+    def process(self, parent_values):
+        ki = float(self.node_data.get('data', {}).get('ki', 1))
+        current_value = parent_values[0] if parent_values else 0
+
+        delta_value = current_value + self.prev_err
+    
+        # Calcula o termo derivativo (KD * derivada)
+        integral = (delta_value * self.ts/ 2) if self.ts > 0 else 0
+        integral = self.prev_err_int + integral
+
+        result = ki * integral
+
+        self.prev_err = current_value
+        self.prev_err_int = integral
+        
+        return result
 
 
 class OperationNode(NodeProcessor):

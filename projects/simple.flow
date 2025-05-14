@@ -45,8 +45,8 @@
                 "text": "Vo1"
             },
             "measured": {
-                "width": 106,
-                "height": 56
+                "width": 102,
+                "height": 52
             },
             "selected": false,
             "dragging": false
@@ -68,14 +68,15 @@
         },
         {
             "id": "dndnode_5",
-            "type": "equation",
+            "type": "decision",
             "position": {
-                "x": 1136.1527777777776,
-                "y": 76.18055555555556
+                "x": 1101.6222222222223,
+                "y": 92.70277777777777
             },
             "data": {
-                "label": "equation",
-                "text": "{x} + 1"
+                "label": "decision",
+                "signal": ">",
+                "text": "1"
             },
             "measured": {
                 "width": 112,
@@ -114,11 +115,12 @@
             "source": "dndnode_1",
             "sourceHandle": "out",
             "target": "dndnode_5",
+            "targetHandle": "in",
             "animated": true,
             "markerEnd": {
                 "type": "arrowclosed"
             },
-            "id": "xy-edge__dndnode_1out-dndnode_5",
+            "id": "xy-edge__dndnode_1out-dndnode_5in",
             "label": ""
         },
         {
