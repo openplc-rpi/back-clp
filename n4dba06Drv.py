@@ -1,4 +1,5 @@
 import minimalmodbus
+import thread
 from globals import ParseConfig
 
 class N4dba06Controller:
@@ -33,7 +34,12 @@ class N4dba06Controller:
         if port not in self.port_mapping['in_ports']:
             raise ValueError("Invalid port name.")
 
-        value = self.instrument.read_register(self.port_mapping['in_ports'][port], functioncode=3)
+        while True:
+            try:
+                value = self.instrument.read_register(self.port_mapping['in_ports'][port], functioncode=3)
+                break
+            except minimalmodbus.NoResponseError:
+                thread.sleep(0.1)
 
         if port in ['Vi1', 'Vi2', 'Ii']:
             value *= 0.01
@@ -44,7 +50,15 @@ class N4dba06Controller:
         if port not in self.port_mapping['out_ports']:
             raise ValueError("Invalid port name.")
 
-        self.instrument.write_register(self.port_mapping['out_ports'][port], value, functioncode=6)
+        if port in ['Vo1', 'Vo2']:
+            value *= 100
+
+        while True:
+            try:
+                self.instrument.write_register(self.port_mapping['out_ports'][port], value, functioncode=6)
+                break
+            except minimalmodbus.NoResponseError:
+                thread.sleep(0.1)
 
 # Usage example:
 #serial_port = ParseConfig('serial', 'port')

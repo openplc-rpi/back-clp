@@ -165,6 +165,7 @@ class Executor(threading.Thread):
                         gpio = int(text.removeprefix("GPIO"))
                         GPIO.output(gpio, result)
                     else:
+                        result = max(OutPutPort_Proprierties[text]['min'] , min(result, OutPutPort_Proprierties[text]['max']))
                         self.n4dba06.write_port(text, result)
 
 
