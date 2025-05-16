@@ -126,3 +126,13 @@ class ValueOf(NodeProcessor):
         ret = 0.0 if ret is None else ret
 
         return ret
+
+class ReferenceValue(NodeProcessor):
+    def __init__(self, node_data, G):
+        self.node_data = node_data
+        self.G = G
+
+    def process(self, parent_values):
+        ret = float(self.node_data.get("data", {}).get("text", "0"))
+        ret = 0.0 if ret is None else ret
+        return ret

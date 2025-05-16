@@ -9,7 +9,8 @@ import math
 from globals import socketio, ParseConfig
 from nodes import   (OperationNode, DecisionNode, AndOrNode, 
                     EquationNode, SwitchNode, OutportNode, 
-                    NodeProcessor, ValueOf, PID)
+                    NodeProcessor, ValueOf, PID,
+                    ReferenceValue)
 
 def is_raspberry_pi():
     return platform.machine().startswith('arm')
@@ -37,10 +38,11 @@ NODE_CLASSES = {
     "switch": SwitchNode,
     "outport": OutportNode,
     "valueof": ValueOf,
-    "pid": PID
+    "pid": PID,
+    "reference": ReferenceValue
 }
 
-UPDATE_INTERVAL = 0.01
+UPDATE_INTERVAL = 0.001
 
 class Executor(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None, filename=None):
@@ -81,9 +83,9 @@ class Executor(threading.Thread):
                     if 'R' in text:
                         new_value = random.randint(0, 1) 
                     elif text == 'Vi1':
-                        new_value = self.get_bounded_random(value, 0.5, 0.05, 5)
+                        new_value = self.get_bounded_random(value, 0.1, 0.05, 5)
                     elif text == 'Vi2':
-                        new_value = self.get_bounded_random(value, 0.5, 0.1, 10)
+                        new_value = self.get_bounded_random(value, 0.1, 0.1, 10)
                     elif text == 'Li':
                         new_value = random.uniform(0, 20)
                     elif text == 'Di':
