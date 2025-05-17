@@ -62,6 +62,12 @@ class Executor(threading.Thread):
             GPIO.setmode(GPIO.BCM)
             self.update = self.update_input_ports
 
+        self.should_save = True if ParseConfig('save', 'should_save') == 'true' else False
+        if self.should_save:
+            self.fsave = open('data.csv', 'w')
+        else:
+            self.fsave = None
+
 
     def get_bounded_random(self, current_value, delta=0.5, min_value=0.0, max_value=5.0):
         lower_bound = max(current_value - delta, min_value)
@@ -191,6 +197,15 @@ class Executor(threading.Thread):
             G.add_edge(edge['source'], edge['target'], value=0, sourceHandle=True if edge['sourceHandle'] == 'true' else False)
         
         return G
+
+
+    def saveEdgeValues(self, eList):
+        self.fsave.write(f"{time.time()} ")
+        for edge in eList:
+            edge_id, value = edge
+            self.fsave.write(f"{edge_id}: {value}, ")
+        self.fsave.write("\n")
+
     
     def getEdgeValue(self, G):
         edges = []
@@ -236,9 +251,12 @@ class Executor(threading.Thread):
                 
             self.recalc_values(G)
 
-            if time.perf_counter() - start_time > 0.1:
+            e = self.getEdgeValue(G)
+            if self.should_save:
+                self.saveEdgeValues(e)
+
+            if time.perf_counter() - start_time > 0.5:
                 start_time = start = time.perf_counter()
-                e = self.getEdgeValue(G)
                 socketio.emit('update', e)
                    
             time.sleep(UPDATE_INTERVAL)

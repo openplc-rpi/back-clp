@@ -1,5 +1,5 @@
 import minimalmodbus
-import thread
+import time
 from globals import ParseConfig
 
 class N4dba06Controller:
@@ -39,7 +39,7 @@ class N4dba06Controller:
                 value = self.instrument.read_register(self.port_mapping['in_ports'][port], functioncode=3)
                 break
             except minimalmodbus.NoResponseError:
-                thread.sleep(0.1)
+                time.sleep(0.1)
 
         if port in ['Vi1', 'Vi2', 'Ii']:
             value *= 0.01
@@ -58,7 +58,7 @@ class N4dba06Controller:
                 self.instrument.write_register(self.port_mapping['out_ports'][port], value, functioncode=6)
                 break
             except minimalmodbus.NoResponseError:
-                thread.sleep(0.1)
+                time.sleep(0.1)
 
 # Usage example:
 #serial_port = ParseConfig('serial', 'port')
