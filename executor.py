@@ -68,6 +68,12 @@ class Executor(threading.Thread):
         else:
             self.fsave = None
 
+        self.loop_save = True if ParseConfig('save', 'loop_save') == 'true' else False
+        if self.should_save:
+            self.flsave = open('time.csv', 'w')
+        else:
+            self.flsave = None
+
 
     def get_bounded_random(self, current_value, delta=0.5, min_value=0.0, max_value=5.0):
         lower_bound = max(current_value - delta, min_value)
@@ -261,7 +267,10 @@ class Executor(threading.Thread):
                 socketio.emit('update', e)
 
             loop_duration = time.perf_counter() - start_loop
-            print(loop_duration)
+
+            if self.loop_save:
+                self.flsave.write(f"{loop_duration}\n")
+
             sleep_time = UPDATE_INTERVAL - loop_duration
             if sleep_time > 0:
                 time.sleep(sleep_time)

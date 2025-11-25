@@ -38,6 +38,6 @@ CORS(app)
 marshmallow = Marshmallow(app)
 
 FlaskAPI = Api(app)
-socketio = SocketIO(app, asymc_mode='eventlet', logger=True, engineio_logger=True, cors_allowed_origins='*')
+socketio = SocketIO(app, asymc_mode='eventlet', logger=False, engineio_logger=False, cors_allowed_origins='*')
 
 
