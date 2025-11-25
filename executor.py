@@ -42,7 +42,7 @@ NODE_CLASSES = {
     "reference": ReferenceValue
 }
 
-UPDATE_INTERVAL = 0.001
+UPDATE_INTERVAL = 0.0001
 
 class Executor(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None, filename=None):
@@ -243,9 +243,10 @@ class Executor(threading.Thread):
         if is_raspberry_pi():
             self.configure_rpi_gpio(G)
         
-        start_time = start = time.perf_counter()
+        start_time = time.perf_counter()
         
         while not self._stop_event.is_set():
+            start_loop = time.perf_counter()
             
             self.update(G)
                 
@@ -254,12 +255,16 @@ class Executor(threading.Thread):
             e = self.getEdgeValue(G)
             if self.should_save:
                 self.saveEdgeValues(e)
-
+            
             if time.perf_counter() - start_time > 0.5:
-                start_time = start = time.perf_counter()
+                start_time = time.perf_counter()
                 socketio.emit('update', e)
-                   
-            time.sleep(UPDATE_INTERVAL)
+
+            loop_duration = time.perf_counter() - start_loop
+            print(loop_duration)
+            sleep_time = UPDATE_INTERVAL - loop_duration
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
 
     def stop(self):
