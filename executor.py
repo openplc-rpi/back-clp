@@ -69,7 +69,7 @@ class Executor(threading.Thread):
             self.fsave = None
 
         self.loop_save = True if ParseConfig('save', 'loop_save') == 'true' else False
-        if self.should_save:
+        if self.loop_save:
             self.flsave = open('time.csv', 'w')
         else:
             self.flsave = None
