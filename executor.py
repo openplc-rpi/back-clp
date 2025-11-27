@@ -12,7 +12,7 @@ from nodes import   (OperationNode, DecisionNode, AndOrNode,
                     NodeProcessor, ValueOf, PID,
                     ReferenceValue)
 
-def is_raspberry_pi():
+def update_input_ports():
     return platform.machine().startswith('arm')
 
 if is_raspberry_pi():
@@ -54,7 +54,7 @@ class Executor(threading.Thread):
         self.last_update = 0
         self.n4dba06 = None
         self.update = self.update_input_ports_random
-
+        self.data = []
         if is_raspberry_pi():
             serial_port = ParseConfig('serial', 'port')
             self.n4dba06 = N4dba06Controller(serial_port)
@@ -213,6 +213,11 @@ class Executor(threading.Thread):
         self.fsave.write("\n")
 
     
+    def saveLoopTimes(self):
+        for value in self.data:
+            self.flsave.write(f"{value}\n") 
+
+    
     def getEdgeValue(self, G):
         edges = []
         
@@ -269,11 +274,15 @@ class Executor(threading.Thread):
             loop_duration = time.perf_counter() - start_loop
 
             if self.loop_save:
-                self.flsave.write(f"{loop_duration}\n")
+                self.data.append(loop_duration)
 
             sleep_time = UPDATE_INTERVAL - loop_duration
             if sleep_time > 0:
                 time.sleep(sleep_time)
+
+        if self.loop_save:
+            self.saveLoopTimes()
+
 
 
     def stop(self):
