@@ -12,7 +12,7 @@ from nodes import   (OperationNode, DecisionNode, AndOrNode,
                     NodeProcessor, ValueOf, PID,
                     ReferenceValue)
 
-def update_input_ports():
+def is_raspberry_pi():
     return platform.machine().startswith('arm')
 
 if is_raspberry_pi():
