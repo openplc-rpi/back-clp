@@ -16,7 +16,7 @@ def is_raspberry_pi():
     return platform.machine().startswith('arm')
 
 if is_raspberry_pi():
-    import RPi.GPIO as GPIO
+    import gpiod
     from n4dba06Drv import N4dba06Controller
 
 OutPutPort_Proprierties = {
@@ -55,11 +55,13 @@ class Executor(threading.Thread):
         self.n4dba06 = None
         self.update = self.update_input_ports_random
         self.data = []
+        self.gpio_chip = None
+        self.gpio_in_lines = {}
+        self.gpio_out_lines = {}
         if is_raspberry_pi():
             serial_port = ParseConfig('serial', 'port')
             self.n4dba06 = N4dba06Controller(serial_port)
-
-            GPIO.setmode(GPIO.BCM)
+            self.gpio_chip = gpiod.Chip('gpiochip0')
             self.update = self.update_input_ports
 
         self.should_save = True if ParseConfig('save', 'should_save') == 'true' else False
@@ -125,7 +127,9 @@ class Executor(threading.Thread):
                 text = node.get("data", {}).get("text", "")
                 if 'GPIO' in text:
                     gpio = int(text.removeprefix("GPIO"))
-                    new_value = GPIO.input(gpio)
+                    line = self.gpio_in_lines.get(gpio)
+                    if line:
+                        new_value = line.get_value()
                 else:
                     new_value = self.n4dba06.read_port(text)
             
@@ -175,7 +179,9 @@ class Executor(threading.Thread):
                 if is_raspberry_pi():
                     if 'GPIO' in text:
                         gpio = int(text.removeprefix("GPIO"))
-                        GPIO.output(gpio, result)
+                        line = self.gpio_out_lines.get(gpio)
+                        if line:
+                            line.set_value(int(result))
                     else:
                         result = max(OutPutPort_Proprierties[text]['min'] , min(result, OutPutPort_Proprierties[text]['max']))
                         self.n4dba06.write_port(text, result)
@@ -232,19 +238,23 @@ class Executor(threading.Thread):
         
         return edges
 
-    def configure_rpi_gpio(self, G):
+    def configure_gpio(self, G):
         for node_id in G.nodes:
             node = G.nodes[node_id]
             if node.get("type") == "inport":
                 text = node.get("data", {}).get("text", "")
                 if 'GPIO' in text:
                     gpio = int(text.removeprefix("GPIO"))
-                    GPIO.setup(gpio, GPIO.IN)
+                    line = self.gpio_chip.get_line(gpio)
+                    line.request(consumer="clp", type=gpiod.LINE_REQ_DIR_IN)
+                    self.gpio_in_lines[gpio] = line
             elif node.get("type") == "outport":
                 text = node.get("data", {}).get("text", "")
                 if 'GPIO' in text:
                     gpio = int(text.removeprefix("GPIO"))
-                    GPIO.setup(gpio, GPIO.OUT)
+                    line = self.gpio_chip.get_line(gpio)
+                    line.request(consumer="clp", type=gpiod.LINE_REQ_DIR_OUT)
+                    self.gpio_out_lines[gpio] = line
 
 
          
@@ -252,7 +262,7 @@ class Executor(threading.Thread):
         G = self.load_graph()
         
         if is_raspberry_pi():
-            self.configure_rpi_gpio(G)
+            self.configure_gpio(G)
         
         start_time = time.perf_counter()
         

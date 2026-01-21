@@ -11,4 +11,4 @@ eventlet
 requests
 websocket-client
 networkx
-rpi.gpio
+python-gpiod
