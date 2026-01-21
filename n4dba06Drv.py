@@ -5,7 +5,7 @@ from globals import ParseConfig
 class N4dba06Controller:
     def __init__(self, serial_port):
         self.instrument = minimalmodbus.Instrument(serial_port, 1)
-        self.instrument.serial.baudrate = 9600
+        self.instrument.serial.baudrate = 19200
         self.instrument.serial.timeout = 3
         self.port_mapping = self._load_addresses()
 
